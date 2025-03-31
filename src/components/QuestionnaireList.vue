@@ -34,9 +34,13 @@ onMounted(fetchData)
       <li v-for="q in questionnaires" :key="q.id">
         {{ q.name }}
         <button @click="$router.push(`/questionnaires/${q.id}`)">Voir</button>
+        <button @click="$router.push(`/questionnaires/${q.id}/edit`)">Modifier</button>
         <button @click="deleteQuestionnaire(q.id)">Supprimer</button>
       </li>
 
+
     </ul>
   </div>
+  <button @click="$router.push('/')">Retour</button>
+
 </template>

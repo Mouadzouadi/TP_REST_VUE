@@ -1,56 +1,93 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, watch } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import api from '@/services/api';
-import { useRouter } from 'vue-router';
 
 const router = useRouter();
+const route = useRoute();
+
 const name = ref('');
 const questions = ref([{ title: '', type_question: 'text', reponses: [''] }]);
 
-// Ajouter une nouvelle question
+const isEdit = ref(false);
+const questionnaireId = ref(null);
+
+const fetchQuestionnaire = async () => {
+  try {
+    const response = await api.getQuestionnaire(route.params.id);
+    const data = response.data;
+    name.value = data.name;
+    questions.value = data.questions.map(q => ({
+      title: q.title,
+      type_question: q.type_question,
+      reponses: q.reponses && q.reponses.length ? q.reponses : ['']
+    }));
+  } catch (error) {
+    console.error('Erreur de chargement du questionnaire', error);
+  }
+};
+
+if (route.params.id) {
+  isEdit.value = true;
+  questionnaireId.value = route.params.id;
+  onMounted(fetchQuestionnaire);
+}
+
 const addQuestion = () => {
   questions.value.push({ title: '', type_question: 'text', reponses: [''] });
 };
 
-// Supprimer une question
 const removeQuestion = (index) => {
   questions.value.splice(index, 1);
 };
 
-// Ajouter une réponse à une question
 const addResponse = (question) => {
-  if (question.type_question !== 'text' || question.reponses.length < 1) {
-    question.reponses.push('');
-  }
+  if (question.type_question === 'text' && question.reponses.length >= 1) return;
+  question.reponses.push('');
 };
 
-// Supprimer une réponse
 const removeResponse = (question, index) => {
   question.reponses.splice(index, 1);
 };
 
-// Soumettre le formulaire
-const submitForm = async () => {
-  try {
-    await api.createQuestionnaire({
-      name: name.value,
-      questions: questions.value.map(q => ({
-        title: q.title,
-        type_question: q.type_question,
-        reponses: q.reponses.filter(r => r.trim() !== '')
-      }))
-    });
+watch(questions, (newQuestions) => {
+  newQuestions.forEach((question) => {
+    if (question.type_question === 'text' && question.reponses.length > 1) {
+      question.reponses = [question.reponses[0]];
+    }
+  });
+}, { deep: true });
 
+const submitForm = async () => {
+  const payload = {
+    name: name.value,
+    questions: questions.value.map(q => ({
+      title: q.title,
+      type_question: q.type_question,
+      reponses: q.reponses.filter(r => r.trim() !== '')
+    }))
+  };
+
+  try {
+    if (isEdit.value) {
+      await api.updateQuestionnaire(questionnaireId.value, payload);
+    } else {
+      await api.createQuestionnaire(payload);
+    }
     router.push('/questionnaires');
   } catch (error) {
-    console.error('Erreur lors de la création du questionnaire', error);
+    console.error(
+      `Erreur lors de ${isEdit.value ? 'la mise à jour' : 'la création'} du questionnaire`,
+      error
+    );
   }
 };
+
 </script>
 
 <template>
   <div>
-    <h1>Créer un questionnaire</h1>
+    <h1>{{ isEdit ? 'Modifier le questionnaire' : 'Créer un questionnaire' }}</h1>
     <form @submit.prevent="submitForm">
       <label>Nom du questionnaire :</label>
       <input v-model="name" required />
@@ -62,7 +99,7 @@ const submitForm = async () => {
 
         <label>Type :</label>
         <select v-model="question.type_question">
-          <option value="text">Question</option>
+          <option value="text">Question ouverte</option>
           <option value="choix_multiple">Choix multiple</option>
         </select>
 
@@ -72,15 +109,27 @@ const submitForm = async () => {
             <input v-model="question.reponses[rIndex]" placeholder="Réponse" />
             <button type="button" @click="removeResponse(question, rIndex)" v-if="question.reponses.length > 1">❌</button>
           </div>
-          <button type="button" @click="addResponse(question)" :disabled="question.type_question === 'text' && question.reponses.length >= 1">➕ Ajouter une réponse</button>
+          <button type="button" 
+                  @click="addResponse(question)" 
+                  :disabled="question.type_question === 'text' && question.reponses.length >= 1">
+            ➕ Ajouter une réponse
+          </button>
         </div>
 
         <button type="button" @click="removeQuestion(index)" v-if="questions.length > 1">🗑 Supprimer la question</button>
       </div>
 
       <button type="button" @click="addQuestion">➕ Ajouter une question</button>
-      <button type="submit">Créer</button>
+      <button type="submit">{{ isEdit ? 'Mettre à jour' : 'Créer' }}</button>
     </form>
   </div>
+  <button @click="$router.push('/questionnaires')">Retour</button>
 </template>
 
+<style scoped>
+.question-block {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+</style>

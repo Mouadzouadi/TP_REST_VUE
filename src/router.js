@@ -8,8 +8,9 @@ const routes = [
   { path: '/', component: HomeView },
   { path: '/questionnaires', component: QuestionnaireList },
   { path: '/questionnaires/new', component: QuestionnaireForm },
-  { path: '/questionnaires/:id', component: QuestionnaireDetail }
-];
+  { path: '/questionnaires/:id', component: QuestionnaireDetail }, 
+  {path: '/questionnaires/:id/edit', component: QuestionnaireForm}
+]
 
 
 const router = createRouter({
