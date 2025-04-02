@@ -6,7 +6,6 @@ import api from '@/services/api';
 const router = useRouter();
 const route = useRoute();
 
-// Ajout de l'index_reponse dans l'initialisation
 const name = ref('');
 const questions = ref([{ title: '', type_question: 'text', reponses: [''], index_reponse: null }]);
 
@@ -44,20 +43,17 @@ const removeQuestion = (index) => {
 };
 
 const addResponse = (question) => {
-  // Pour une question ouverte, on ne permet qu'une seule réponse
   if (question.type_question === 'text' && question.reponses.length >= 1) return;
   question.reponses.push('');
 };
 
 const removeResponse = (question, index) => {
   question.reponses.splice(index, 1);
-  // Ajuste l'index_reponse s'il est hors limites après suppression
   if (question.index_reponse !== null && question.index_reponse >= question.reponses.length) {
     question.index_reponse = 0;
   }
 };
 
-// Si le type passe à "text", ne garder que la première réponse et réinitialiser index_reponse
 watch(questions, (newQuestions) => {
   newQuestions.forEach((question) => {
     if (question.type_question === 'text' && question.reponses.length > 1) {
@@ -125,7 +121,6 @@ const submitForm = async () => {
           </button>
         </div>
 
-        <!-- Dropdown pour sélectionner la bonne réponse (uniquement pour choix multiple) -->
         <div v-if="question.type_question === 'choix_multiple'">
           <label>Bonne réponse :</label>
           <select v-model="question.index_reponse">

@@ -1,29 +1,34 @@
-# client
+# Questionnaire App
 
-This template should help get you started developing with Vue 3 in Vite.
+## Installation
 
-## Recommended IDE Setup
+### Backend (Flask)
+1. Créez un environnement virtuel et activez-le :
+   ```bash
+   python -m venv venv
+   source venv/bin/activate
+   
+   Installez les dépendances :
+   pip install flask flask-cors sqlalchemy
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+Lancez le serveur Flask :
 
-## Customize configuration
+    python app.py
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+    Le backend sera disponible sur http://localhost:5000.
 
-## Project Setup
+Frontend (Vue 3 + Vite)
 
-```sh
-npm install
-```
+    Installez les dépendances:
 
-### Compile and Hot-Reload for Development
+    npm install
 
-```sh
-npm run dev
-```
+Lancez le serveur de développement :
 
-### Compile and Minify for Production
+    npm run dev
 
-```sh
-npm run build
-```
+Le frontend sera accessible sur http://localhost:5173.
+
+Nom : Mouad Zouadi
+Lien Git : https://github.com/Mouadzouadi/TP_REST_VUE
+
