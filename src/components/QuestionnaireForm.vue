@@ -7,7 +7,7 @@ const router = useRouter();
 const route = useRoute();
 
 const name = ref('');
-const questions = ref([{ title: '', type_question: 'text', reponses: [''] }]);
+const questions = ref([{ title: '', type_question: 'text', reponses: [''], index_reponse: null }]);
 
 const isEdit = ref(false);
 const questionnaireId = ref(null);
@@ -20,7 +20,8 @@ const fetchQuestionnaire = async () => {
     questions.value = data.questions.map(q => ({
       title: q.title,
       type_question: q.type_question,
-      reponses: q.reponses && q.reponses.length ? q.reponses : ['']
+      reponses: q.reponses && q.reponses.length ? q.reponses : [''],
+      index_reponse: q.type_question === 'choix_multiple' ? q.index_reponse : null
     }));
   } catch (error) {
     console.error('Erreur de chargement du questionnaire', error);
@@ -34,7 +35,7 @@ if (route.params.id) {
 }
 
 const addQuestion = () => {
-  questions.value.push({ title: '', type_question: 'text', reponses: [''] });
+  questions.value.push({ title: '', type_question: 'text', reponses: [''], index_reponse: null });
 };
 
 const removeQuestion = (index) => {
@@ -52,8 +53,9 @@ const removeResponse = (question, index) => {
 
 watch(questions, (newQuestions) => {
   newQuestions.forEach((question) => {
-    if (question.type_question === 'text' && question.reponses.length > 1) {
+    if (question.type_question === 'text') {
       question.reponses = [question.reponses[0]];
+      question.index_reponse = null;
     }
   });
 }, { deep: true });
@@ -64,7 +66,8 @@ const submitForm = async () => {
     questions: questions.value.map(q => ({
       title: q.title,
       type_question: q.type_question,
-      reponses: q.reponses.filter(r => r.trim() !== '')
+      reponses: q.reponses.filter(r => r.trim() !== ''),
+      index_reponse: q.type_question === 'choix_multiple' ? q.index_reponse : null
     }))
   };
 
@@ -82,7 +85,6 @@ const submitForm = async () => {
     );
   }
 };
-
 </script>
 
 <template>
@@ -109,11 +111,19 @@ const submitForm = async () => {
             <input v-model="question.reponses[rIndex]" placeholder="Réponse" />
             <button type="button" @click="removeResponse(question, rIndex)" v-if="question.reponses.length > 1">❌</button>
           </div>
-          <button type="button" 
-                  @click="addResponse(question)" 
-                  :disabled="question.type_question === 'text' && question.reponses.length >= 1">
+          <button type="button" @click="addResponse(question)" :disabled="question.type_question === 'text' && question.reponses.length >= 1">
             ➕ Ajouter une réponse
           </button>
+        </div>
+
+        <!-- Dropdown pour sélectionner la bonne réponse -->
+        <div v-if="question.type_question === 'choix_multiple'">
+          <label>Bonne réponse :</label>
+          <select v-model="question.index_reponse">
+            <option v-for="(reponse, rIndex) in question.reponses" :key="rIndex" :value="rIndex">
+              {{ reponse }}
+            </option>
+          </select>
         </div>
 
         <button type="button" @click="removeQuestion(index)" v-if="questions.length > 1">🗑 Supprimer la question</button>

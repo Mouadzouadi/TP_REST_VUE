@@ -10,6 +10,7 @@ const routes = [
   { path: '/questionnaires/new', component: QuestionnaireForm },
   { path: '/questionnaires/:id', component: QuestionnaireDetail }, 
   {path: '/questionnaires/:id/edit', component: QuestionnaireForm}
+
 ]
 
 

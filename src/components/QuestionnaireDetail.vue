@@ -35,9 +35,10 @@ export default {
         <strong>{{ question.title }}</strong>
 
         <ul v-if="question.reponses && question.reponses.length">
-          <li v-for="(reponse, index) in question.reponses" :key="index">
+            <li v-for="(reponse, index) in question.reponses" :key="index" 
+              :style="{ color: question.type_question === 'choix_multiple' && question.index_reponse === index ? 'green' : (question.type_question === 'choix_multiple' ? 'red' : 'inherit') }">
             {{ reponse }}
-          </li>
+            </li>
         </ul>
         <p v-else>Aucune réponse enregistrée.</p>
       </li>
