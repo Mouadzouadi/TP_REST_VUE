@@ -6,6 +6,7 @@ import api from '@/services/api';
 const router = useRouter();
 const route = useRoute();
 
+// Ajout de l'index_reponse dans l'initialisation
 const name = ref('');
 const questions = ref([{ title: '', type_question: 'text', reponses: [''], index_reponse: null }]);
 
@@ -43,17 +44,23 @@ const removeQuestion = (index) => {
 };
 
 const addResponse = (question) => {
+  // Pour une question ouverte, on ne permet qu'une seule réponse
   if (question.type_question === 'text' && question.reponses.length >= 1) return;
   question.reponses.push('');
 };
 
 const removeResponse = (question, index) => {
   question.reponses.splice(index, 1);
+  // Ajuste l'index_reponse s'il est hors limites après suppression
+  if (question.index_reponse !== null && question.index_reponse >= question.reponses.length) {
+    question.index_reponse = 0;
+  }
 };
 
+// Si le type passe à "text", ne garder que la première réponse et réinitialiser index_reponse
 watch(questions, (newQuestions) => {
   newQuestions.forEach((question) => {
-    if (question.type_question === 'text') {
+    if (question.type_question === 'text' && question.reponses.length > 1) {
       question.reponses = [question.reponses[0]];
       question.index_reponse = null;
     }
@@ -111,17 +118,19 @@ const submitForm = async () => {
             <input v-model="question.reponses[rIndex]" placeholder="Réponse" />
             <button type="button" @click="removeResponse(question, rIndex)" v-if="question.reponses.length > 1">❌</button>
           </div>
-          <button type="button" @click="addResponse(question)" :disabled="question.type_question === 'text' && question.reponses.length >= 1">
+          <button type="button" 
+                  @click="addResponse(question)" 
+                  :disabled="question.type_question === 'text' && question.reponses.length >= 1">
             ➕ Ajouter une réponse
           </button>
         </div>
 
-        <!-- Dropdown pour sélectionner la bonne réponse -->
+        <!-- Dropdown pour sélectionner la bonne réponse (uniquement pour choix multiple) -->
         <div v-if="question.type_question === 'choix_multiple'">
           <label>Bonne réponse :</label>
           <select v-model="question.index_reponse">
             <option v-for="(reponse, rIndex) in question.reponses" :key="rIndex" :value="rIndex">
-              {{ reponse }}
+              {{ reponse || `Réponse ${rIndex + 1}` }}
             </option>
           </select>
         </div>
